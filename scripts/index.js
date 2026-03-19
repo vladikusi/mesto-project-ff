@@ -14,20 +14,20 @@ function createPlaceCard (cardData, onDelete) {
 
   title.textContent = cardData.name;
   image.src = cardData.link;
-  deleteButton.addEventListener('click', onDelete);
+  image.alt = cardData.name;
+  deleteButton.addEventListener('click', () => onDelete(placeCardElement));
   
   return placeCardElement;
 }
 
 // Функция удаления карточки
-function deletePlaceCard(evt) {
-  const placeCard = evt.target.closest('.places__item');
-  placeCard.remove(); 
+function deletePlaceCard(cardElement) {
+  cardElement.remove(); 
 }
 
 // Вывод карточек на страницу
 initialCards.forEach((card) => {
   const placeCard = createPlaceCard(card, deletePlaceCard);
   placesList.append(placeCard);
-})
+});
 
