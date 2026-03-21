@@ -11,7 +11,7 @@ import { createPlaceCard, deletePlaceCard, likeButton } from './components/card.
 import { openModal, closeModal } from './components/modal.js';
 import { profileFormSubmit } from './components/profileform.js';
 import { placeFormSubmit } from './components/placeform.js';
-import { resetForm } from './components/form.js';
+import { setFormValues } from './components/form.js';
 
 // Вставка статичных картинок в шаблон 
 document.querySelector('.logo').src = logo;
@@ -37,10 +37,10 @@ const profileForm = document.forms['edit-profile'];
 const placeForm = document.forms['new-place'];
 
 // Обработчик нажатия на картинку
-const handleImageClick = (title, image) => {
-  popupTitle.textContent = title.textContent;
-  popupImage.src = image.src;
-  popupImage.alt = image.alt;
+const handleImageClick = (name, link) => {
+  popupTitle.textContent = name;
+  popupImage.src = link;
+  popupImage.alt = name;
 
   openModal(imageModal);
 }
@@ -56,16 +56,13 @@ content.addEventListener('click', function(evt) {
   const targetClass = evt.target.classList;
   if (targetClass.contains('profile__edit-button')) {
     openModal(editModal);
-    resetForm(profileForm, {
+    setFormValues(profileForm, {
       name: profileTitle.textContent,
       description: profileDesc.textContent,
     }); // Сброс формы профиля
   } else if (targetClass.contains('profile__add-button')) {
     openModal(newCardModal);
-    resetForm(placeForm, {
-      'place-name': '',
-      link: '',
-    });
+    placeForm.reset();
   }
 });
 

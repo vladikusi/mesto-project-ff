@@ -16,7 +16,7 @@ export function createPlaceCard (cardData, onDelete, onLike, onImage) {
   
   like.addEventListener('click', () => onLike(like));
 
-  image.addEventListener('click', () => onImage(title, image))
+  image.addEventListener('click', () => onImage(cardData.name, cardData.link))
 
   return placeCardElement;
 }
