@@ -12,6 +12,7 @@ import { openModal, closeModal } from './components/modal.js';
 import { profileFormSubmit } from './components/profileform.js';
 import { placeFormSubmit } from './components/placeform.js';
 import { setFormValues } from './components/form.js';
+import { clearValidation, enableValidation } from './validation.js';
 
 // Вставка статичных картинок в шаблон 
 document.querySelector('.logo').src = logo;
@@ -36,6 +37,17 @@ const popupImage = document.querySelector('.popup__image');
 const profileForm = document.forms['edit-profile'];
 const placeForm = document.forms['new-place'];
 
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+}
+
+enableValidation(validationConfig); 
+
 // Обработчик нажатия на картинку
 const handleImageClick = (name, link) => {
   popupTitle.textContent = name;
@@ -55,14 +67,16 @@ initialCards.forEach((card) => {
 content.addEventListener('click', function(evt) {
   const targetClass = evt.target.classList;
   if (targetClass.contains('profile__edit-button')) {
-    openModal(editModal);
     setFormValues(profileForm, {
       name: profileTitle.textContent,
       description: profileDesc.textContent,
     }); // Сброс формы профиля
+    clearValidation(profileForm, validationConfig);
+    openModal(editModal);
   } else if (targetClass.contains('profile__add-button')) {
-    openModal(newCardModal);
     placeForm.reset();
+    openModal(newCardModal);
+    clearValidation(placeForm, validationConfig);
   }
 });
 
