@@ -3,5 +3,5 @@ export function avatarFormSubmit(evt) {
 
   const form = evt.target;
 
-  return form.elements.link.value; 
+  return form.elements.link.value;
 }

@@ -6,8 +6,7 @@ export function profileFormSubmit(evt) {
 
   const user = {
     name: form.elements.name.value,
-    about: form.elements.description.value
-  }
+    about: form.elements.description.value,
+  };
   return user;
 }
-
