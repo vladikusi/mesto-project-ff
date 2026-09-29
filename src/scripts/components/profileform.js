@@ -1,9 +1,13 @@
 // Сабмит формы
-export function profileFormSubmit(evt, profileName, profileDesc) {
+export function profileFormSubmit(evt) {
   evt.preventDefault();
 
   const form = evt.target;
 
-  profileName.textContent = form.elements.name.value;
-  profileDesc.textContent = form.elements.description.value;
+  const user = {
+    name: form.elements.name.value,
+    about: form.elements.description.value
+  }
+  return user;
 }
+

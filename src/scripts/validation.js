@@ -14,10 +14,29 @@ function hideInputError(input, inputErrorClass, errorClass) {
   errorElement.classList.remove(errorClass);
 }
 
-function checkInputValidity(form, input, validationSettings) {
+const checkImageUrl = (input) => {
+  return fetch(input.value, {
+  method: 'HEAD',})
+    .then((response) => {
+      const contentType = response.headers.get('Content-Type');
+      if (!response.ok || !contentType?.startsWith('image/')) {
+        input.setCustomValidity('Ссылка должна вести на изображение');
+      } else {
+        input.setCustomValidity('');
+      }
+    })
+    .catch ((err) => {
+      input.setCustomValidity('Не удалось проверить ссылку');
+    });
+}
+
+async function checkInputValidity(form, input, validationSettings) {
   if (input.validity.patternMismatch) {
     input.setCustomValidity(input.dataset.errorMessage);
-  } else {
+  } else if (input.type === 'url') {
+    await checkImageUrl(input);
+  }
+  else {
     input.setCustomValidity('');
   }
   if (!input.validity.valid) {
@@ -32,8 +51,8 @@ function hasInvalidInput(inputList) {
   return [...inputList].some((input) => !input.validity.valid);
 }
 
-function toggleButtonState(inputList, button, inactiveButtonClass) {
-  if (hasInvalidInput(inputList)) {
+function toggleButtonState(inputList, button, inactiveButtonClass, isChecking = false) {
+  if (isChecking || hasInvalidInput(inputList)) {
     button.classList.add(inactiveButtonClass);
     button.disabled = true;
   } else {
@@ -48,11 +67,17 @@ export function enableValidation(validationConfig) {
   forms.forEach((form) => {
     const inputs = form.querySelectorAll(validationConfig.inputSelector);
     const button = form.querySelector(validationConfig.submitButtonSelector);
+    let timeout;
 
     inputs.forEach((input) => {
       input.addEventListener('input', () => {
-        checkInputValidity(form, input, validationConfig);
-        toggleButtonState(inputs, button, validationConfig.inactiveButtonClass);
+        clearTimeout(timeout);
+        toggleButtonState(inputs, button, validationConfig.inactiveButtonClass, true);
+
+        timeout = setTimeout(async () => {
+          await checkInputValidity(form, input, validationConfig);
+          toggleButtonState(inputs, button, validationConfig.inactiveButtonClass);
+        }, 500);
       });
     });
   });

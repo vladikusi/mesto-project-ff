@@ -31,3 +31,4 @@ export function closeModal(modal) {
   modal.removeEventListener('click', handleClick);
   document.removeEventListener('keydown', handleEsc);
 }
+
