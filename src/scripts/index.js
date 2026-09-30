@@ -16,9 +16,6 @@ import {
   handleClick as handlePopupClick,
   handleEsc,
 } from './components/modal.js';
-import { profileFormSubmit } from './components/profileform.js';
-import { placeFormSubmit } from './components/placeform.js';
-import { setFormValues } from './components/form.js';
 import { clearValidation, enableValidation } from './validation.js';
 import {
   cardDelete,
@@ -78,8 +75,6 @@ popups.forEach((popup) => {
   popup.addEventListener('click', handlePopupClick);
 });
 
-document.addEventListener('keydown', handleEsc);
-
 // Обработчик нажатия на картинку
 const handleImageClick = (name, link) => {
   popupTitle.textContent = name;
@@ -123,6 +118,14 @@ function changeSubmitButton(form, text) {
   button.textContent = text;
 }
 
+function setFormValues(form, values = {}) {
+  Object.keys(values).forEach((key) => {
+    if (form.elements[key]) {
+      form.elements[key].value = values[key];
+    }
+  });
+}
+
 // Обработчики вызова модалок
 function handleEditProfileClick() {
   setFormValues(profileForm, {
@@ -162,12 +165,32 @@ function handleDeleteClick(cardId, cardElement) {
   openModal(deleteModal);
 }
 
+// Функции возвращения данных форм при сабмите
+function placeFormSubmitData(evt) {
+  const form = evt.target;
+  const cardData = {
+    name: form.elements['place-name'].value,
+    link: form.elements.link.value,
+  };
+  return cardData;
+}
+
+function profileFormSubmitData(evt) {
+  const form = evt.target;
+  const user = {
+    name: form.elements.name.value,
+    about: form.elements.description.value,
+  };
+  return user;
+}
+
 // Обработчики форм
 profileForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
   changeSubmitButton(profileForm, 'Сохранение...');
-  profilePatch(profileFormSubmit(evt))
+  profilePatch(profileFormSubmitData(evt))
     .then((result) => {
-      updateUser(result);
+      updateUser(result.name, result.about, result.avatar);
       closeModal(editModal);
     })
     .catch((err) => {
@@ -176,8 +199,9 @@ profileForm.addEventListener('submit', (evt) => {
 });
 
 placeForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
   changeSubmitButton(placeForm, 'Сохранение...');
-  cardPost(placeFormSubmit(evt))
+  cardPost(placeFormSubmitData(evt))
     .then((cardData) => {
       const newCard = createPlaceCard(
         cardData,
