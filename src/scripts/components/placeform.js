@@ -5,7 +5,7 @@ export function placeFormSubmit(evt) {
   const form = evt.target;
 
   const cardData = {
-    name: form.elements["place-name"].value,
+    name: form.elements['place-name'].value,
     link: form.elements.link.value,
   };
 
