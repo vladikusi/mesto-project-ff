@@ -10,19 +10,24 @@ import {
   deletePlaceCard,
   likeButton,
 } from './components/card.js';
-import { openModal, closeModal } from './components/modal.js';
+import {
+  openModal,
+  closeModal,
+  handleClick as handlePopupClick,
+  handleEsc,
+} from './components/modal.js';
 import { profileFormSubmit } from './components/profileform.js';
 import { placeFormSubmit } from './components/placeform.js';
 import { setFormValues } from './components/form.js';
 import { clearValidation, enableValidation } from './validation.js';
 import {
+  cardDelete,
   cardPost,
   getInitialCards,
   getUser,
   patchAvatar,
   profilePatch,
 } from './api.js';
-import { avatarFormSubmit } from './components/avatarform.js';
 
 // Вставка статичных картинок в шаблон
 document.querySelector('.logo').src = logo;
@@ -30,6 +35,9 @@ document.querySelector('.logo').src = logo;
 // DOM узлы
 const content = document.querySelector('.content');
 const placesList = content.querySelector('.places__list');
+
+// Попапы
+const popups = document.querySelectorAll('.popup');
 const editModal = document.querySelector('.popup_type_edit');
 const newCardModal = document.querySelector('.popup_type_new-card');
 const imageModal = document.querySelector('.popup_type_image');
@@ -50,6 +58,10 @@ const placeForm = document.forms['new-place'];
 const avatarForm = document.forms['avatar-update'];
 const deleteForm = document.forms['delete-confirm'];
 
+// Кнопки редактирования
+const profileEditButton = document.querySelector('.profile__edit-button');
+const profileAddButton = document.querySelector('.profile__add-button');
+
 const validationConfig = {
   formSelector: '.popup__form',
   inputSelector: '.popup__input',
@@ -61,6 +73,13 @@ const validationConfig = {
 
 enableValidation(validationConfig);
 
+// Обработчики событий модалок
+popups.forEach((popup) => {
+  popup.addEventListener('click', handlePopupClick);
+});
+
+document.addEventListener('keydown', handleEsc);
+
 // Обработчик нажатия на картинку
 const handleImageClick = (name, link) => {
   popupTitle.textContent = name;
@@ -70,32 +89,30 @@ const handleImageClick = (name, link) => {
   openModal(imageModal);
 };
 
-const updateUser = (user) => {
-  profileTitle.textContent = user.name;
-  profileDesc.textContent = user.about;
-  profileImage.style.backgroundImage = `url(${user.avatar})`;
+const updateUser = (name, about, avatar) => {
+  profileTitle.textContent = name;
+  profileDesc.textContent = about;
+  profileImage.style.backgroundImage = `url(${avatar})`;
 };
 
 // Текущий пользователь
-let currentUser;
-let currentAvatarUrl = '';
+let currentUserId;
 
 // Вывод карточек на страницу
 Promise.all([getInitialCards(), getUser()])
   .then(([cards, user]) => {
-    currentUser = user;
+    currentUserId = user._id;
     cards.forEach((card) => {
       const placeCard = createPlaceCard(
         card,
-        currentUser._id,
+        currentUserId,
         handleDeleteClick,
         likeButton,
         handleImageClick,
       );
       placesList.append(placeCard);
     });
-    updateUser(currentUser);
-    currentAvatarUrl = user.avatar;
+    updateUser(user.name, user.about, user.avatar);
   })
   .catch((err) => {
     console.log(err);
@@ -107,36 +124,35 @@ function changeSubmitButton(form, text) {
 }
 
 // Обработчики вызова модалок
-content.addEventListener('click', function (evt) {
-  const target = evt.target.closest('button');
-  if (!target) return;
-  const targetClass = target.classList;
-  switch (true) {
-    case targetClass.contains('profile__edit-button'):
-      setFormValues(profileForm, {
-        name: profileTitle.textContent,
-        description: profileDesc.textContent,
-      }); // Сброс формы профиля
-      clearValidation(profileForm, validationConfig);
-      changeSubmitButton(profileForm, 'Сохранить');
-      openModal(editModal);
-      break;
-    case targetClass.contains('profile__add-button'):
-      placeForm.reset();
-      openModal(newCardModal);
-      changeSubmitButton(placeForm, 'Сохранить');
-      clearValidation(placeForm, validationConfig);
-      break;
-    case targetClass.contains('profile__image'):
-      setFormValues(avatarForm, {
-        link: currentAvatarUrl,
-      });
-      changeSubmitButton(avatarForm, 'Сохранить');
-      openModal(avatarModal);
-      clearValidation(avatarForm, validationConfig);
-      break;
-  }
-});
+function handleEditProfileClick() {
+  setFormValues(profileForm, {
+    name: profileTitle.textContent,
+    description: profileDesc.textContent,
+  }); // Сброс формы профиля
+
+  clearValidation(profileForm, validationConfig);
+  changeSubmitButton(profileForm, 'Сохранить');
+  openModal(editModal);
+}
+
+function handleAddCardClick() {
+  placeForm.reset();
+  openModal(newCardModal);
+  changeSubmitButton(placeForm, 'Сохранить');
+  clearValidation(placeForm, validationConfig);
+}
+
+function handleAvatarClick() {
+  avatarForm.reset();
+  changeSubmitButton(avatarForm, 'Сохранить');
+  openModal(avatarModal);
+  clearValidation(avatarForm, validationConfig);
+}
+
+profileEditButton.addEventListener('click', handleEditProfileClick);
+profileAddButton.addEventListener('click', handleAddCardClick);
+profileImage.addEventListener('click', handleAvatarClick);
+
 // Обработчик вызова модалки подтверждения удаления карточки
 let cardIdToDelete;
 let cardElementToDelete;
@@ -165,7 +181,7 @@ placeForm.addEventListener('submit', (evt) => {
     .then((cardData) => {
       const newCard = createPlaceCard(
         cardData,
-        currentUser._id,
+        currentUserId,
         handleDeleteClick,
         likeButton,
         handleImageClick,
@@ -180,11 +196,12 @@ placeForm.addEventListener('submit', (evt) => {
 });
 
 avatarForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  const targetLink = evt.target.elements['profile-link'].value;
   changeSubmitButton(avatarForm, 'Сохранение...');
-  patchAvatar(avatarFormSubmit(evt))
+  patchAvatar(targetLink)
     .then((user) => {
       profileImage.style.backgroundImage = `url(${user.avatar})`;
-      currentAvatarUrl = user.avatar;
       closeModal(avatarModal);
     })
     .catch((err) => {
@@ -195,13 +212,12 @@ avatarForm.addEventListener('submit', (evt) => {
 
 deleteForm.addEventListener('submit', (evt) => {
   evt.preventDefault();
-
-  deletePlaceCard(cardIdToDelete, cardElementToDelete)
+  cardDelete(cardIdToDelete)
     .then(() => {
+      deletePlaceCard(cardElementToDelete);
       closeModal(deleteModal);
     })
     .catch((err) => {
-      changeSubmitButton(profileForm, 'Сохранить');
       console.log(err);
     });
 });

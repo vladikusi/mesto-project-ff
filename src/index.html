@@ -48,7 +48,7 @@
                 data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"
                 required
               />
-              <span class="popup__input-error"></span>
+              <span id="name-error" class="popup__input-error"></span>
             </div>
             <div class="popup__input-container">
               <input
@@ -62,7 +62,7 @@
                 data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"
                 required
               />
-              <span class="popup__input-error"></span>
+              <span id="description-error" class="popup__input-error"></span>
             </div>
             <button type="submit" class="button popup__button">
               Сохранить
@@ -87,7 +87,7 @@
                 data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"
                 required
               />
-              <span class="popup__input-error"></span>
+              <span id="place-name-error" class="popup__input-error"></span>
             </div>
             <div class="popup__input-container">
               <input
@@ -97,7 +97,7 @@
                 placeholder="Ссылка на картинку"
                 required
               />
-              <span class="popup__input-error"></span>
+              <span id="link-error" class="popup__input-error"></span>
             </div>
             <button type="submit" class="button popup__button">
               Сохранить
@@ -113,12 +113,12 @@
             <div class="popup__input-container">
               <input
                 type="url"
-                name="link"
+                name="profile-link"
                 class="popup__input popup__input_type_url"
                 placeholder="Ссылка на аватар"
                 required
               />
-              <span class="popup__input-error"></span>
+              <span id="profile-link-error" class="popup__input-error"></span>
             </div>
             <button type="submit" class="button popup__button">
               Сохранить

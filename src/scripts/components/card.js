@@ -1,4 +1,4 @@
-import { cardDelete, cardLike, cardUnlike } from '../api';
+import { cardLike, cardUnlike } from '../api';
 
 // Темплейт карточки
 const placeCardTemplate = document.querySelector('#card-template').content;
@@ -42,10 +42,8 @@ export function createPlaceCard(cardData, userId, onDelete, onLike, onImage) {
 }
 
 // Функция удаления карточки
-export function deletePlaceCard(cardId, cardElement) {
-  return cardDelete(cardId).then(() => {
-    cardElement.remove();
-  });
+export function deletePlaceCard(cardElement) {
+  cardElement.remove();
 }
 
 // Функция лайка карточки
